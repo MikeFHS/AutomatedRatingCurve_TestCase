@@ -116,8 +116,11 @@ def Process_AutoRoute_Geospatial_Data():
     out_file = open(FLOW_File,'w')
     out_str = 'COMID,qout_max,rp2,rp5,rp10,rp25,rp50,rp100'
     out_file.write(out_str)
-    for x in range(num_unique_comid):
-        out_str = '\n' + str(COMID_Unique[x]) + ',' + str(QMax[x]) + ',' + str(Q2[x]) + ',' + str(Q5[x]) + ',' + str(Q10[x]) + ',' + str(Q25[x]) + ',' + str(Q50[x]) + ',' + str(Q100[x])
+    for i in range(num_unique_comid):
+        COMID = COMID_Unique[i]
+        x = np.where(ID==COMID)
+        x = int(x[0])
+        out_str = '\n' + str(COMID) + ',' + str(QMax[x]) + ',' + str(Q2[x]) + ',' + str(Q5[x]) + ',' + str(Q10[x]) + ',' + str(Q25[x]) + ',' + str(Q50[x]) + ',' + str(Q100[x])
         out_file.write(out_str)
     out_file.close()
     
@@ -216,6 +219,7 @@ def Create_COMID_Flow_Files(COMID_Unique, num_comids, MinCOMID, MaxCOMID, FlowFi
         COMID = COMID_Unique[i]
         x = np.where(ID==COMID)
         x = int(x[0])
+        #print(str(COMID) + '  ' + str(x) + '  ' + str(QMax[x]))
         
         fmax.write('\n' + str(COMID) + ',' + str(QMax[x]))
         f2.write('\n' + str(COMID) + ',' + str(Q2[x]))
