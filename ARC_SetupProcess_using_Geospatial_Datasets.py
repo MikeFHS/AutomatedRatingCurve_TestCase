@@ -38,12 +38,14 @@ def Process_AutoRoute_Geospatial_Data():
     BathyFileFolder = 'Bathymetry'
     FloodFolder = 'FloodMap'
     ARC_Folder = 'ARC_InputFiles'
+    XSFileFolder = 'XS'
     ManningN = 'LAND/AR_Manning_n_for_NLCD_MED.txt'
     VDT_File = 'VDT/Gardiner_VDT_Database.txt'
     Curve_File = 'VDT/Gardiner_CurveFile.csv'
     FloodMapFile = FloodFolder + '/' + 'Gardiner_ARC_Flood.tif'
     DepthMapFile = FloodFolder + '/' + 'Gardiner_ARC_Depth.tif'
     ARC_BathyFile = BathyFileFolder + '/' + 'Gardiner_ARC_Bathy.tif'
+    XS_Out_File = XSFileFolder + '/' + 'Gardiner_XS_File.txt'
     
     #Create Folders
     Create_Folder('STRM')
@@ -54,6 +56,7 @@ def Process_AutoRoute_Geospatial_Data():
     Create_Folder(FlowFileFolder)
     Create_Folder(ARC_Folder)
     Create_Folder(BathyFileFolder)
+    Create_Folder(XSFileFolder)
     
     
     
@@ -132,7 +135,7 @@ def Process_AutoRoute_Geospatial_Data():
     ARC_FileName = os.path.join(ARC_Folder,'ARC_Input_File.txt')
     print('Creating ARC Input File: ' + ARC_FileName)
     COMID_Q_File = FlowFileFolder + '/' + 'COMID_Q_qout_max.txt'
-    Create_ARC_Model_Input_File(Main_Directory, ARC_FileName, DEM_File, COMID_Q_File, 'COMID', 'qout_max', 'rp2', STRM_File_Clean, LAND_File, FLOW_File, VDT_File, Curve_File, ManningN, FloodMapFile, DepthMapFile, ARC_BathyFile, VDT_Test_File)
+    Create_ARC_Model_Input_File(Main_Directory, ARC_FileName, DEM_File, COMID_Q_File, 'COMID', 'qout_max', 'rp2', STRM_File_Clean, LAND_File, FLOW_File, VDT_File, Curve_File, ManningN, FloodMapFile, DepthMapFile, ARC_BathyFile, VDT_Test_File,  XS_Out_File)
     
     
     print('\n\n')
@@ -146,7 +149,7 @@ def Create_Folder(F):
         os.makedirs(F)
     return
 
-def Create_ARC_Model_Input_File(MD, ARC_Input_File, DEM_File, COMID_Q_File, COMID_Param, Q_Param, Q_BF_Param, STRM_File_Clean, LAND_File, FLOW_File, VDT_File, Curve_File, ManningN, FloodMapFile, DepthMapFile, ARC_BathyFile, VDT_Test_File):
+def Create_ARC_Model_Input_File(MD, ARC_Input_File, DEM_File, COMID_Q_File, COMID_Param, Q_Param, Q_BF_Param, STRM_File_Clean, LAND_File, FLOW_File, VDT_File, Curve_File, ManningN, FloodMapFile, DepthMapFile, ARC_BathyFile, VDT_Test_File,  XS_Out_File):
     out_file = open(os.path.join(MD,ARC_Input_File),'w')
     out_file.write('#ARC_Inputs')
     out_file.write('\n' + 'DEM_File	' + os.path.join(MD,DEM_File))
@@ -177,6 +180,10 @@ def Create_ARC_Model_Input_File(MD, ARC_Input_File, DEM_File, COMID_Q_File, COMI
     out_file.write('\n\n#Bathymetry_Information')
     out_file.write('\n' + 'Bathy_Trap_H	0.20')
     out_file.write('\n' + 'AROutBATHY	' + ARC_BathyFile)
+
+    out_file.write('\n\n#Cross Section Information')
+    out_file.write('\n' + 'XS_Out_File	' + XS_Out_File)
+    
     out_file.close()
     
 
