@@ -6,9 +6,11 @@ from scipy.sparse import csr_matrix
 
 import os, sys
 
-import gdal
-from gdalconst import GA_ReadOnly
-#from osgeo import gdal, ogr, osr
+try:
+    from osgeo import gdal
+except:
+    import gdal
+    from gdalconst import GA_ReadOnly
 
 # Power function equation
 def power_func(x, a, b):
@@ -24,7 +26,7 @@ def cubic_func(x, a, b, c, e):
 
 def Get_Raster_Details(DEM_File):
     print(DEM_File)
-    gdal.Open(DEM_File, GA_ReadOnly)
+    gdal.Open(DEM_File, gdal.GA_ReadOnly)
     data = gdal.Open(DEM_File)
     geoTransform = data.GetGeoTransform()
     ncols = int(data.RasterXSize)
@@ -482,26 +484,22 @@ def Run_Main_REDUCED_Curve_to_GEOJSON_Program(WatershedName, CurveParam_File, CO
         if np.any(c_index)==True:
             CP_Q[c_index] = Q_List[i]
     
-    
     #Calculate Depth Values
-    bv = curve_data[1:,6].astype(float)
-    a = curve_data[1:,7].astype(float)
-    b = curve_data[1:,8].astype(float)
-    CP_DEP = bv + a*np.power(CP_Q, b, dtype=float)
+    a = curve_data[1:,6].astype(float)
+    b = curve_data[1:,7].astype(float)
+    CP_DEP = a*np.power(CP_Q, b, dtype=float)
     CP_DEP = np.maximum(CP_DEP,float(0.05))      #This is so you always have some sort of value to map
     CP_WSE = CP_ELEV + CP_DEP
-    
+
     #Calculate TopWidth Values
-    bv = curve_data[1:,9].astype(float)
+    a = curve_data[1:,8].astype(float)
+    b = curve_data[1:,9].astype(float)
+    CP_TW = a*np.power(CP_Q, b, dtype=float)
+    
+    #Calculate Velocity Values
     a = curve_data[1:,10].astype(float)
     b = curve_data[1:,11].astype(float)
-    CP_VEL = bv + a*np.power(CP_Q, b, dtype=float)
-    
-    #Calculate TopWidth Values
-    bv = curve_data[1:,12].astype(float)
-    a = curve_data[1:,13].astype(float)
-    b = curve_data[1:,14].astype(float)
-    CP_TW = bv + a*np.power(CP_Q, b, dtype=float)
+    CP_VEL = a*np.power(CP_Q, b, dtype=float)
     
     #Calculate Latitude and Longitude
     CP_LAT = lat_base - CP_ROW * cellsize_y
@@ -542,35 +540,60 @@ if __name__ == "__main__":
     #Watershed_List = ['PotterCreek']
     #Watershed_List = ['BigHorn']
     
-    for i in range(len(Watershed_List)):
+    # for i in range(len(Watershed_List)):
         
-        WatershedName = Watershed_List[i]
+    #     WatershedName = Watershed_List[i]
         
-        OutFolder = "Curve_to_GeoJSON\\"
+    #     OutFolder = "Curve_to_GeoJSON\\"
         
-        COMID_Q_File = "FlowFile\\" + WatershedName + '_Flow_COMID_Q_qout_max.txt'
-        STRM_Raster_File = "STRM\\" + WatershedName + "_STRM_Clean.tif"
-        DEM_Raster_File = "DEM\\" + WatershedName + ".tif"
-        OutGeoJSON_File = OutFolder + WatershedName + "_GeoJSON.geojson"
-        SEED_Point_File = OutFolder + WatershedName + "_SEED_Points.txt"
-        OutProjection = "EPSG:4269"
+    #     COMID_Q_File = "FlowFile\\" + WatershedName + '_Flow_COMID_Q_qout_max.txt'
+    #     STRM_Raster_File = "STRM\\" + WatershedName + "_STRM_Clean.tif"
+    #     DEM_Raster_File = "DEM\\" + WatershedName + ".tif"
+    #     OutGeoJSON_File = OutFolder + WatershedName + "_GeoJSON.geojson"
+    #     SEED_Point_File = OutFolder + WatershedName + "_SEED_Points.txt"
+    #     OutProjection = "EPSG:4269"
         
-        CurveParam_File = "CurveParameters\\CurveParams_" + WatershedName + "_Reduced.txt"
-        
-        
-        print('\n\nStarting to Work on ' + WatershedName)
-        
-        #Get the SEED Values
-        if os.path.isfile(SEED_Point_File)==False or Redo_Seed_Point_File==True:
-            #(SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST(STRM_Raster_File, DEM_Raster_File, SEED_Point_File)   #The Write_SEED_Data_To_File_FAST_UPDATED version works too and provides very similar results
-            (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST_UPDATED(STRM_Raster_File, DEM_Raster_File, SEED_Point_File )  #The Write_SEED_Data_To_File_FAST_UPDATED version uses less RAM
-        else:
-            (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = GetSEED_Data_From_File(SEED_Point_File)
+    #     CurveParam_File = "CurveParameters\\CurveParams_" + WatershedName + "_Reduced.txt"
         
         
-        #Run the Main Program to Create a GeoJSON output file
-        Run_Main_REDUCED_Curve_to_GEOJSON_Program(WatershedName, CurveParam_File, COMID_Q_File, STRM_Raster_File, DEM_Raster_File, OutGeoJSON_File, SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev)
+    #     print('\n\nStarting to Work on ' + WatershedName)
         
+    #     #Get the SEED Values
+    #     if os.path.isfile(SEED_Point_File)==False or Redo_Seed_Point_File==True:
+    #         #(SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST(STRM_Raster_File, DEM_Raster_File, SEED_Point_File)   #The Write_SEED_Data_To_File_FAST_UPDATED version works too and provides very similar results
+    #         (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST_UPDATED(STRM_Raster_File, DEM_Raster_File, SEED_Point_File )  #The Write_SEED_Data_To_File_FAST_UPDATED version uses less RAM
+    #     else:
+    #         (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = GetSEED_Data_From_File(SEED_Point_File)
+        
+        
+    #     #Run the Main Program to Create a GeoJSON output file
+    #     Run_Main_REDUCED_Curve_to_GEOJSON_Program(WatershedName, CurveParam_File, COMID_Q_File, STRM_Raster_File, DEM_Raster_File, OutGeoJSON_File, SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev)
+    
+    WatershedName = "Gardiner"
+       
+    COMID_Q_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\FLOW\Gardiner_FlowFile.txt"
+    STRM_Raster_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\STRM\Gardiner_STRM_Raster_Clean.tif"
+    DEM_Raster_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\DEM\Gardiner_DEM.tif"
+    OutGeoJSON_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\FIST\Gardiner.geojson"
+    SEED_Point_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\FIST\Gardiner_SEED_Points.txt"
+    OutProjection = "EPSG:4269"
+    
+    CurveParam_File = r"C:\Users\jlgut\OneDrive\Desktop\AutomatedRatingCurve_TestCase\VDT\Gardiner_CurveFile_filtered.csv"
+    
+    
+    print('\n\nStarting to Work on ' + WatershedName)
+    
+    #Get the SEED Values
+    if os.path.isfile(SEED_Point_File)==False or Redo_Seed_Point_File==True:
+        #(SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST(STRM_Raster_File, DEM_Raster_File, SEED_Point_File)   #The Write_SEED_Data_To_File_FAST_UPDATED version works too and provides very similar results
+        (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = Write_SEED_Data_To_File_FAST_UPDATED(STRM_Raster_File, DEM_Raster_File, SEED_Point_File )  #The Write_SEED_Data_To_File_FAST_UPDATED version uses less RAM
+    else:
+        (SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev) = GetSEED_Data_From_File(SEED_Point_File)
+    
+    
+    #Run the Main Program to Create a GeoJSON output file
+    Run_Main_REDUCED_Curve_to_GEOJSON_Program(WatershedName, CurveParam_File, COMID_Q_File, STRM_Raster_File, DEM_Raster_File, OutGeoJSON_File, SEED_Lat, SEED_Lon, SEED_COMID, SEED_r, SEED_c, SEED_MinElev, SEED_MaxElev)
+
         
     
     
