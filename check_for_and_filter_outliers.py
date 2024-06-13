@@ -152,16 +152,16 @@ def check_for_vdt_outliers(vdt_file, out_vdt_file, xs_file, curve_file, out_curv
             flagged_wse_greater_downstream_than_upstream_length = flagged_wse_greater_downstream_than_upstream_length + len(vdt_single_comid_df[(vdt_single_comid_df[WSE_diff_column]>0)])
             total_stream_cell_length = total_stream_cell_length + len(vdt_single_comid_df.index.values)          
             
-            # # If the upstream WSE is lower than the downstream, replace it with NaN
-            # vdt_single_comid_df.loc[vdt_single_comid_df[WSE_diff_column] > 0, WSE_column] = np.NaN
+            # If the upstream WSE is lower than the downstream, replace it with NaN
+            vdt_single_comid_df.loc[vdt_single_comid_df[WSE_diff_column] > 0, WSE_column] = np.NaN
 
-            # # If the WSE is equal to 0, replace it with NaN
-            # flagged_wse_zero_length = flagged_wse_zero_length + ((vdt_single_comid_df[WSE_column]==0)).sum()
-            # vdt_single_comid_df.loc[vdt_single_comid_df[WSE_column] == 0, WSE_column] = np.NaN
+            # If the WSE is equal to 0, replace it with NaN
+            flagged_wse_zero_length = flagged_wse_zero_length + ((vdt_single_comid_df[WSE_column]==0)).sum()
+            vdt_single_comid_df.loc[vdt_single_comid_df[WSE_column] == 0, WSE_column] = np.NaN
 
-            # # If the WSE for the stream reach if the z-score is greater than 2 or less-than -2
-            # flagged_wse_outlier_length = flagged_wse_outlier_length + (abs(stats.zscore(vdt_single_comid_df[WSE_column])) > 2).sum()
-            # vdt_single_comid_df.loc[stats.zscore(abs(vdt_single_comid_df[WSE_column])) > 2, WSE_column] = np.NaN
+            # If the WSE for the stream reach if the z-score is greater than 2 or less-than -2
+            flagged_wse_outlier_length = flagged_wse_outlier_length + (abs(stats.zscore(vdt_single_comid_df[WSE_column])) > 2).sum()
+            vdt_single_comid_df.loc[stats.zscore(abs(vdt_single_comid_df[WSE_column])) > 2, WSE_column] = np.NaN
 
             # add the section below to test scipy's spline interpolation (3 means cubic spline)
             vdt_single_comid_nan_filtered_df = vdt_single_comid_df.dropna(subset=[WSE_column])
@@ -180,7 +180,7 @@ def check_for_vdt_outliers(vdt_file, out_vdt_file, xs_file, curve_file, out_curv
             # Generate new x values for evaluation
             x_new = np.linspace(min(vdt_single_comid_df['Elev'].values), max(vdt_single_comid_df['Elev'].values), len(vdt_single_comid_df['Elev'].values))
             ynew = interpolate.splev(vdt_single_comid_df['Elev'].values, tck)
-            # vdt_single_comid_df[WSE_column] = ynew
+            vdt_single_comid_df[WSE_column] = ynew
 
             # Use interpolation to fill NaN WSE values
             # vdt_single_comid_df[WSE_column] = vdt_single_comid_df[WSE_column].interpolate(method='linear')
